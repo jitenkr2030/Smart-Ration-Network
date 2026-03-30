@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { QRCode, User, Store, Shield, AlertCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react'
+import { QrCode, User, Store, Shield, AlertCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState('user')
@@ -79,7 +79,7 @@ export default function LoginPage() {
           </Link>
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <QRCode className="w-7 h-7 text-primary-foreground" />
+              <QrCode className="w-7 h-7 text-primary-foreground" />
             </div>
             <h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
           </div>

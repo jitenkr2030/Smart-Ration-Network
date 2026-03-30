@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
-  QRCode, 
+  QrCode, 
   Home, 
   CreditCard, 
   History, 
@@ -188,7 +188,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-4">
               <Link href="/" className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <QRCode className="w-5 h-5 text-primary-foreground" />
+                  <QrCode className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <span className="font-bold text-lg">QR Ration</span>
               </Link>
@@ -380,7 +380,7 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <QRCode className="w-5 h-5" />
+                  <QrCode className="w-5 h-5" />
                   Your QR Code
                 </CardTitle>
                 <CardDescription>
@@ -403,7 +403,7 @@ export default function DashboardPage() {
                 ) : (
                   <div className="space-y-4">
                     <div className="mx-auto w-48 h-48 bg-slate-100 rounded-lg flex items-center justify-center">
-                      <QRCode className="w-16 h-16 text-slate-400" />
+                      <QrCode className="w-16 h-16 text-slate-400" />
                     </div>
                     <Button onClick={fetchQrCode} variant="outline" size="sm">
                       Generate QR Code

@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { QRCode, User, Store, Shield, Check, AlertCircle, ArrowLeft } from 'lucide-react'
+import { QrCode, User, Store, Shield, Check, AlertCircle, ArrowLeft } from 'lucide-react'
 
 export default function RegisterPage() {
   const [activeTab, setActiveTab] = useState('user')
@@ -116,7 +116,7 @@ export default function RegisterPage() {
           </Link>
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <QRCode className="w-7 h-7 text-primary-foreground" />
+              <QrCode className="w-7 h-7 text-primary-foreground" />
             </div>
             <h1 className="text-3xl font-bold text-foreground">QR Smart Ration Network</h1>
           </div>
@@ -394,7 +394,7 @@ export default function RegisterPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <QRCode className="w-5 h-5" />
+                  <QrCode className="w-5 h-5" />
                   Your Digital Identity
                 </CardTitle>
                 <CardDescription>
@@ -419,7 +419,7 @@ export default function RegisterPage() {
                 ) : (
                   <div className="space-y-4">
                     <div className="mx-auto w-64 h-64 bg-slate-100 rounded-lg flex items-center justify-center">
-                      <QRCode className="w-16 h-16 text-slate-400" />
+                      <QrCode className="w-16 h-16 text-slate-400" />
                     </div>
                     <p className="text-sm text-muted-foreground">
                       Your QR code will appear here after successful registration

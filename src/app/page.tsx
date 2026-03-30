@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { QRCode, Smartphone, Store, Users, TrendingUp, Shield } from 'lucide-react'
+import { QrCode, Smartphone, Store, Users, TrendingUp, Shield } from 'lucide-react'
 
 export default function Home() {
   const [activeRole, setActiveRole] = useState<'user' | 'shop' | 'admin'>('user')
@@ -18,7 +18,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <QRCode className="w-5 h-5 text-primary-foreground" />
+                <QrCode className="w-5 h-5 text-primary-foreground" />
               </div>
               <h1 className="text-xl font-bold text-foreground">QR Smart Ration Network</h1>
             </div>
@@ -96,7 +96,7 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Link href={activeRole === 'user' ? '/register' : activeRole === 'shop' ? '/register' : '/admin/login'}>
+            <Link href={activeRole === 'user' ? '/register' : activeRole === 'shop' ? '/register' : '/admin/login'}>
                 <Button className="w-full" size="lg">
                   {activeRole === 'user' && 'Create Account'}
                   {activeRole === 'shop' && 'Register Shop'}
@@ -121,7 +121,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Card>
               <CardHeader>
-                <QRCode className="w-10 h-10 text-primary mb-2" />
+                <QrCode className="w-10 h-10 text-primary mb-2" />
                 <CardTitle>QR-based Identity</CardTitle>
                 <CardDescription>
                   Unique QR code for every user for instant verification and transactions
@@ -289,7 +289,7 @@ export default function Home() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <QRCode className="w-5 h-5 text-primary-foreground" />
+                  <QrCode className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <h4 className="text-lg font-bold">QR Ration</h4>
               </div>
