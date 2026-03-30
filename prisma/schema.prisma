@@ -1,0 +1,244 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Users in the QR Ration system
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  mobile            String   @unique
+  name              String
+  aadhaarNumber     String?  @unique
+  address           String?
+  qrCodeId          String   @unique
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  subscriptions      Subscription[]
+  transactions       Transaction[]
+  familyMembers      FamilyMember[]
+
+  @@map("users")
+}
+
+// Family members linked to a user account
+model FamilyMember {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  age         Int
+  relationship String
+  aadhaarNumber String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("family_members")
+}
+
+// Partner shops in the network
+model Shop {
+  id                String   @id @default(cuid())
+  name              String
+  email             String   @unique
+  mobile            String   @unique
+  address           String
+  gstNumber         String?  @unique
+  licenseNumber     String?  @unique
+  ownerName         String
+  latitude          Float?
+  longitude         Float?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  transactions      Transaction[]
+  inventory         Inventory[]
+  staffMembers      StaffMember[]
+
+  @@map("shops")
+}
+
+// Staff members working at shops
+model StaffMember {
+  id          String   @id @default(cuid())
+  shopId      String
+  name        String
+  mobile      String   @unique
+  email       String?
+  role        String   // owner, manager, operator
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@map("staff_members")
+}
+
+// Subscription plans
+model SubscriptionPlan {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Int      // in rupees (paise)
+  duration    Int      // in months
+  maxMembers  Int
+  features    String   // JSON string of features
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  subscriptions Subscription[]
+
+  @@map("subscription_plans")
+}
+
+// User subscriptions
+model Subscription {
+  id                String   @id @default(cuid())
+  userId            String
+  planId            String
+  startDate         DateTime
+  endDate           DateTime
+  status            String   // active, expired, cancelled, suspended
+  monthlyQuota      Int      // total monthly quota points
+  usedQuota         Int      @default(0)
+  paymentStatus     String   // paid, pending, failed
+  lastPaymentDate   DateTime?
+  nextPaymentDate   DateTime?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan              SubscriptionPlan @relation(fields: [planId], references: [id])
+  transactions      Transaction[]
+
+  @@map("subscriptions")
+}
+
+// Products available in the system
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  category      String   // grains, oils, spices, etc.
+  unit          String   // kg, liters, packets
+  quotaPoints   Int      // points required per unit
+  description   String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  inventory     Inventory[]
+  transactionItems TransactionItem[]
+
+  @@map("products")
+}
+
+// Shop inventory
+model Inventory {
+  id          String   @id @default(cuid())
+  shopId      String
+  productId   String
+  quantity    Float
+  reorderLevel Float
+  lastUpdated DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@unique([shopId, productId])
+  @@map("inventory")
+}
+
+// Ration transactions
+model Transaction {
+  id                String   @id @default(cuid())
+  transactionId     String   @unique // human readable transaction ID
+  userId            String
+  shopId            String
+  subscriptionId    String
+  totalQuotaPoints  Int
+  status            String   // completed, pending, failed, cancelled
+  paymentMethod     String?  // qr, upi, cash, wallet
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  user              User     @relation(fields: [userId], references: [id])
+  shop              Shop     @relation(fields: [shopId], references: [id])
+  subscription      Subscription @relation(fields: [subscriptionId], references: [id])
+  items             TransactionItem[]
+
+  @@map("transactions")
+}
+
+// Individual items in a transaction
+model TransactionItem {
+  id            String   @id @default(cuid())
+  transactionId String
+  productId     String
+  quantity      Float
+  unitPrice     Int      // in paise
+  quotaPoints   Int
+  createdAt     DateTime @default(now())
+
+  // Relations
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  product       Product    @relation(fields: [productId], references: [id])
+
+  @@map("transaction_items")
+}
+
+// Admin users
+model Admin {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String
+  mobile      String?
+  role        String   // super_admin, admin, operator
+  permissions String   // JSON string of permissions
+  isActive    Boolean  @default(true)
+  lastLogin   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("admins")
+}
+
+// System settings
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+}
