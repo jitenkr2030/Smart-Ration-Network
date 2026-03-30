@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Input } from '@/components/ui/input'
 import { 
   Shield, 
   Home, 
@@ -16,78 +17,74 @@ import {
   TrendingUp, 
   Settings, 
   LogOut,
+  Search,
+  Filter,
   BarChart3,
+  PieChart,
+  Activity,
+  DollarSign,
   ShoppingCart,
-  UserCheck,
+  UserPlus,
   AlertCircle,
   CheckCircle,
-  XCircle,
-  Eye,
-  Edit,
-  Trash2,
-  Plus,
-  Package
+  Clock,
+  MoreHorizontal
 } from 'lucide-react'
 
 interface AdminData {
   id: string
   name: string
   email: string
-  mobile?: string
   role: string
+  permissions: string[]
 }
 
-interface Stats {
+interface SystemStats {
   totalUsers: number
   totalShops: number
   activeSubscriptions: number
-  todayTransactions: number
   monthlyRevenue: number
+  totalTransactions: number
+  pendingApprovals: number
 }
 
-interface User {
+interface RecentUser {
   id: string
   name: string
   email: string
   mobile: string
-  qrCodeId: string
-  isActive: boolean
   createdAt: string
-  subscription?: {
-    plan: {
-      name: string
-    }
-    status: string
-  }
+  subscriptionStatus: string
 }
 
-interface Shop {
+interface RecentShop {
   id: string
   name: string
   email: string
-  mobile: string
   ownerName: string
-  isActive: boolean
   createdAt: string
+  status: string
 }
 
 export default function AdminDashboard() {
   const [admin, setAdmin] = useState<AdminData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState<Stats>({
+  const [searchTerm, setSearchTerm] = useState('')
+  const [systemStats, setSystemStats] = useState<SystemStats>({
     totalUsers: 0,
     totalShops: 0,
     activeSubscriptions: 0,
-    todayTransactions: 0,
-    monthlyRevenue: 0
+    monthlyRevenue: 0,
+    totalTransactions: 0,
+    pendingApprovals: 0
   })
-  const [users, setUsers] = useState<User[]>([])
-  const [shops, setShops] = useState<Shop[]>([])
+  const [recentUsers, setRecentUsers] = useState<RecentUser[]>([])
+  const [recentShops, setRecentShops] = useState<RecentShop[]>([])
   const router = useRouter()
 
   useEffect(() => {
     // Check if admin is logged in
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('adminToken')
     const adminData = localStorage.getItem('admin')
     
     if (!token || !adminData) {
@@ -105,86 +102,60 @@ export default function AdminDashboard() {
   const fetchDashboardData = async () => {
     try {
       // Mock data for demonstration
-      setStats({
+      setSystemStats({
         totalUsers: 1247,
         totalShops: 89,
         activeSubscriptions: 892,
-        todayTransactions: 156,
-        monthlyRevenue: 2847500
+        monthlyRevenue: 2847600,
+        totalTransactions: 5634,
+        pendingApprovals: 12
       })
 
-      setUsers([
+      setRecentUsers([
         {
           id: '1',
           name: 'Rahul Kumar',
-          email: 'rahul@example.com',
+          email: 'rahul.kumar@email.com',
           mobile: '9876543210',
-          qrCodeId: 'QR-USER-001',
-          isActive: true,
-          createdAt: '2024-01-15',
-          subscription: {
-            plan: { name: 'Family Pack' },
-            status: 'active'
-          }
+          createdAt: '2024-11-15T10:30:00Z',
+          subscriptionStatus: 'active'
         },
         {
           id: '2',
           name: 'Priya Sharma',
-          email: 'priya@example.com',
+          email: 'priya.sharma@email.com',
           mobile: '9876543211',
-          qrCodeId: 'QR-USER-002',
-          isActive: true,
-          createdAt: '2024-01-20',
-          subscription: {
-            plan: { name: 'Basic' },
-            status: 'active'
-          }
+          createdAt: '2024-11-15T09:45:00Z',
+          subscriptionStatus: 'pending'
         },
         {
           id: '3',
           name: 'Amit Singh',
-          email: 'amit@example.com',
+          email: 'amit.singh@email.com',
           mobile: '9876543212',
-          qrCodeId: 'QR-USER-003',
-          isActive: false,
-          createdAt: '2024-02-01',
-          subscription: {
-            plan: { name: 'Premium' },
-            status: 'expired'
-          }
+          createdAt: '2024-11-14T16:20:00Z',
+          subscriptionStatus: 'active'
         }
       ])
 
-      setShops([
+      setRecentShops([
         {
           id: '1',
-          name: 'Annapurna General Store',
-          email: 'annapurna@example.com',
-          mobile: '9876543213',
+          name: 'New General Store',
+          email: 'newstore@email.com',
           ownerName: 'Ramesh Kumar',
-          isActive: true,
-          createdAt: '2024-01-10'
+          createdAt: '2024-11-15T11:00:00Z',
+          status: 'pending'
         },
         {
           id: '2',
-          name: 'Krishna Provision Store',
-          email: 'krishna@example.com',
-          mobile: '9876543214',
+          name: 'City Provision Store',
+          email: 'cityprovision@email.com',
           ownerName: 'Suresh Patel',
-          isActive: true,
-          createdAt: '2024-01-12'
-        },
-        {
-          id: '3',
-          name: 'Maa Durga Kirana',
-          email: 'maadurga@example.com',
-          mobile: '9876543215',
-          ownerName: 'Vijay Singh',
-          isActive: false,
-          createdAt: '2024-02-05'
+          createdAt: '2024-11-14T14:30:00Z',
+          status: 'active'
         }
       ])
-
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
     } finally {
@@ -193,10 +164,20 @@ export default function AdminDashboard() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
+    localStorage.removeItem('adminToken')
     localStorage.removeItem('admin')
     router.push('/')
   }
+
+  const filteredUsers = recentUsers.filter(user =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const filteredShops = recentShops.filter(shop =>
+    shop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    shop.email.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   if (loading) {
     return (
@@ -239,6 +220,10 @@ export default function AdminDashboard() {
                   <Store className="w-4 h-4" />
                   Shops
                 </Link>
+                <Link href="/admin/subscriptions" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+                  <CreditCard className="w-4 h-4" />
+                  Subscriptions
+                </Link>
                 <Link href="/admin/analytics" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
                   <BarChart3 className="w-4 h-4" />
                   Analytics
@@ -246,7 +231,8 @@ export default function AdminDashboard() {
               </nav>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">Admin: {admin.name}</span>
+              <span className="text-sm text-muted-foreground">Welcome, {admin.name}</span>
+              <Badge variant="secondary">{admin.role}</Badge>
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
@@ -257,19 +243,19 @@ export default function AdminDashboard() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <div>
+        <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage the QR Smart Ration Network</p>
+          <p className="text-muted-foreground">System overview and management controls</p>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid md:grid-cols-5 gap-4 mt-8">
+        {/* System Stats */}
+        <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.totalUsers.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-foreground">{systemStats.totalUsers.toLocaleString()}</p>
                 </div>
                 <Users className="w-8 h-8 text-blue-600" />
               </div>
@@ -280,8 +266,8 @@ export default function AdminDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Partner Shops</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.totalShops}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Total Shops</p>
+                  <p className="text-2xl font-bold text-foreground">{systemStats.totalShops}</p>
                 </div>
                 <Store className="w-8 h-8 text-green-600" />
               </div>
@@ -292,8 +278,8 @@ export default function AdminDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Active Subscriptions</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.activeSubscriptions.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Active Subs</p>
+                  <p className="text-2xl font-bold text-foreground">{systemStats.activeSubscriptions}</p>
                 </div>
                 <CreditCard className="w-8 h-8 text-purple-600" />
               </div>
@@ -304,10 +290,10 @@ export default function AdminDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Today's Transactions</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.todayTransactions}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Monthly Revenue</p>
+                  <p className="text-2xl font-bold text-foreground">₹{(systemStats.monthlyRevenue / 100).toLocaleString()}</p>
                 </div>
-                <ShoppingCart className="w-8 h-8 text-orange-600" />
+                <DollarSign className="w-8 h-8 text-orange-600" />
               </div>
             </CardContent>
           </Card>
@@ -316,40 +302,68 @@ export default function AdminDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Monthly Revenue</p>
-                  <p className="text-2xl font-bold text-foreground">₹{(stats.monthlyRevenue / 100000).toFixed(1)}L</p>
+                  <p className="text-sm font-medium text-muted-foreground">Transactions</p>
+                  <p className="text-2xl font-bold text-foreground">{systemStats.totalTransactions.toLocaleString()}</p>
                 </div>
-                <TrendingUp className="w-8 h-8 text-green-600" />
+                <ShoppingCart className="w-8 h-8 text-red-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Pending</p>
+                  <p className="text-2xl font-bold text-foreground">{systemStats.pendingApprovals}</p>
+                </div>
+                <Clock className="w-8 h-8 text-yellow-600" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Data Tables */}
-        <Tabs defaultValue="users" className="mt-8">
+        {/* Search and Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="Search users or shops..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+          <Button variant="outline" className="flex items-center gap-2">
+            <Filter className="w-4 h-4" />
+            Filters
+          </Button>
+        </div>
+
+        {/* Recent Activity Tabs */}
+        <Tabs defaultValue="users" className="space-y-6">
           <TabsList>
             <TabsTrigger value="users">Recent Users</TabsTrigger>
             <TabsTrigger value="shops">Recent Shops</TabsTrigger>
+            <TabsTrigger value="transactions">Recent Transactions</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="users" className="space-y-4">
+          <TabsContent value="users">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Recent Users</CardTitle>
-                    <CardDescription>Latest user registrations and activity</CardDescription>
-                  </div>
-                  <Link href="/admin/users">
-                    <Button variant="outline" size="sm">
-                      View All Users
-                    </Button>
-                  </Link>
-                </div>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Recent User Registrations
+                </CardTitle>
+                <CardDescription>
+                  Latest users who have joined the platform
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {users.map((user) => (
+                  {filteredUsers.map((user) => (
                     <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
@@ -359,50 +373,47 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                           <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-muted-foreground">{user.email} • {user.mobile}</p>
-                          <p className="text-xs text-muted-foreground">QR: {user.qrCodeId} • Joined {new Date(user.createdAt).toLocaleDateString()}</p>
+                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                          <p className="text-xs text-muted-foreground">{user.mobile}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {user.subscription ? (
-                          <Badge variant={user.subscription.status === 'active' ? 'default' : 'secondary'}>
-                            {user.subscription.plan.name}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline">No Subscription</Badge>
-                        )}
-                        <Badge variant={user.isActive ? 'default' : 'secondary'}>
-                          {user.isActive ? 'Active' : 'Inactive'}
+                      <div className="flex items-center gap-3">
+                        <Badge variant={user.subscriptionStatus === 'active' ? 'default' : 'secondary'}>
+                          {user.subscriptionStatus}
                         </Badge>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </p>
                         <Button variant="ghost" size="sm">
-                          <Eye className="w-4 h-4" />
+                          <MoreHorizontal className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
                   ))}
+                  <Link href="/admin/users">
+                    <Button variant="outline" className="w-full">
+                      View All Users
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="shops" className="space-y-4">
+          <TabsContent value="shops">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Recent Shops</CardTitle>
-                    <CardDescription>Latest shop registrations and status</CardDescription>
-                  </div>
-                  <Link href="/admin/shops">
-                    <Button variant="outline" size="sm">
-                      View All Shops
-                    </Button>
-                  </Link>
-                </div>
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="w-5 h-5" />
+                  Recent Shop Registrations
+                </CardTitle>
+                <CardDescription>
+                  Latest shops that have joined the partner network
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {shops.map((shop) => (
+                  {filteredShops.map((shop) => (
                     <div key={shop.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
@@ -410,107 +421,93 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                           <p className="font-medium">{shop.name}</p>
-                          <p className="text-sm text-muted-foreground">Owner: {shop.ownerName}</p>
-                          <p className="text-sm text-muted-foreground">{shop.email} • {shop.mobile}</p>
-                          <p className="text-xs text-muted-foreground">Joined {new Date(shop.createdAt).toLocaleDateString()}</p>
+                          <p className="text-sm text-muted-foreground">{shop.email}</p>
+                          <p className="text-xs text-muted-foreground">Owner: {shop.ownerName}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={shop.isActive ? 'default' : 'secondary'}>
-                          {shop.isActive ? 'Active' : 'Inactive'}
+                      <div className="flex items-center gap-3">
+                        <Badge variant={shop.status === 'active' ? 'default' : 'secondary'}>
+                          {shop.status}
                         </Badge>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(shop.createdAt).toLocaleDateString()}
+                        </p>
                         <Button variant="ghost" size="sm">
-                          <Eye className="w-4 h-4" />
+                          <MoreHorizontal className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
                   ))}
+                  <Link href="/admin/shops">
+                    <Button variant="outline" className="w-full">
+                      View All Shops
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="transactions">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="w-5 h-5" />
+                  Recent System Activity
+                </CardTitle>
+                <CardDescription>
+                  Latest transactions and system events
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[
+                    { id: '1', type: 'transaction', user: 'Rahul Kumar', shop: 'Annapurna Store', amount: 350, time: '2 mins ago', status: 'completed' },
+                    { id: '2', type: 'subscription', user: 'Priya Sharma', plan: 'Family Pack', amount: 3999, time: '15 mins ago', status: 'completed' },
+                    { id: '3', type: 'registration', user: 'Amit Singh', type: 'User Registration', amount: 0, time: '1 hour ago', status: 'pending' }
+                  ].map((activity) => (
+                    <div key={activity.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                          activity.type === 'transaction' ? 'bg-blue-100' :
+                          activity.type === 'subscription' ? 'bg-green-100' : 'bg-orange-100'
+                        }`}>
+                          {activity.type === 'transaction' ? (
+                            <ShoppingCart className="w-5 h-5 text-blue-600" />
+                          ) : activity.type === 'subscription' ? (
+                            <CreditCard className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <UserPlus className="w-5 h-5 text-orange-600" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">{activity.user}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {activity.type === 'transaction' ? `Transaction at ${activity.shop}` :
+                             activity.type === 'subscription' ? `Subscribed to ${activity.plan}` :
+                             `New ${activity.type}`}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{activity.time}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-medium">₹{activity.amount}</span>
+                        <Badge variant={activity.status === 'completed' ? 'default' : 'secondary'}>
+                          {activity.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                  <Link href="/admin/transactions">
+                    <Button variant="outline" className="w-full">
+                      View All Activity
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserCheck className="w-5 h-5" />
-                User Management
-              </CardTitle>
-              <CardDescription>
-                Manage user accounts and subscriptions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Link href="/admin/users">
-                <Button variant="outline" className="w-full justify-start">
-                  <Users className="w-4 h-4 mr-2" />
-                  View All Users
-                </Button>
-              </Link>
-              <Link href="/admin/subscriptions">
-                <Button variant="outline" className="w-full justify-start">
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Manage Subscriptions
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Store className="w-5 h-5" />
-                Shop Management
-              </CardTitle>
-              <CardDescription>
-                Oversee partner shops and inventory
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Link href="/admin/shops">
-                <Button variant="outline" className="w-full justify-start">
-                  <Store className="w-4 h-4 mr-2" />
-                  View All Shops
-                </Button>
-              </Link>
-              <Link href="/admin/inventory">
-                <Button variant="outline" className="w-full justify-start">
-                  <Package className="w-4 h-4 mr-2" />
-                  Inventory Overview
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5" />
-                Analytics
-              </CardTitle>
-              <CardDescription>
-                System insights and reports
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Link href="/admin/analytics">
-                <Button variant="outline" className="w-full justify-start">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  View Analytics
-                </Button>
-              </Link>
-              <Link href="/admin/reports">
-                <Button variant="outline" className="w-full justify-start">
-                  <TrendingUp className="w-4 h-4 mr-2" />
-                  Generate Reports
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   )

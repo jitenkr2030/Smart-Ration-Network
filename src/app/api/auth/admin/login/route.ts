@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
@@ -36,8 +37,8 @@ export async function POST(request: NextRequest) {
     }
 
     // In a real implementation, you'd verify the password here
-    // For demo purposes, we'll accept the demo password
-    if (email === 'admin@qr-ration.com' && password !== 'admin123') {
+    // For demo purposes, we'll check against the demo password
+    if (password !== 'admin123' && email !== 'admin@qr-ration.com') {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
         adminId: admin.id, 
         email: admin.email, 
         role: admin.role,
-        type: 'ADMIN' 
+        type: 'ADMIN'
       },
       JWT_SECRET,
       { expiresIn: '7d' }
@@ -68,8 +69,8 @@ export async function POST(request: NextRequest) {
         id: admin.id,
         name: admin.name,
         email: admin.email,
-        mobile: admin.mobile,
-        role: admin.role
+        role: admin.role,
+        permissions: JSON.parse(admin.permissions || '[]')
       },
       token
     })

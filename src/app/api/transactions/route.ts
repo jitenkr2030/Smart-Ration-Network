@@ -6,19 +6,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
     const shopId = searchParams.get('shopId')
-    const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
-    const skip = (page - 1) * limit
+    const offset = parseInt(searchParams.get('offset') || '0')
 
     let whereClause = {}
-    
-    if (userId) {
-      whereClause = { ...whereClause, userId }
-    }
-    
-    if (shopId) {
-      whereClause = { ...whereClause, shopId }
-    }
+    if (userId) whereClause = { ...whereClause, userId }
+    if (shopId) whereClause = { ...whereClause, shopId }
 
     const transactions = await db.transaction.findMany({
       where: whereClause,
@@ -52,21 +45,19 @@ export async function GET(request: NextRequest) {
       orderBy: {
         createdAt: 'desc'
       },
-      skip,
-      take: limit
+      take: limit,
+      skip: offset
     })
 
-    const total = await db.transaction.count({
-      where: whereClause
-    })
+    const total = await db.transaction.count({ where: whereClause })
 
     return NextResponse.json({
       transactions,
       pagination: {
-        page,
-        limit,
         total,
-        pages: Math.ceil(total / limit)
+        limit,
+        offset,
+        hasMore: offset + limit < total
       }
     })
 
@@ -91,58 +82,56 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get user and active subscription
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      include: {
-        subscriptions: {
-          where: {
-            status: 'active',
-            endDate: {
-              gte: new Date()
-            }
-          },
-          include: {
-            plan: true
-          }
+    // Get user's active subscription
+    const subscription = await db.subscription.findFirst({
+      where: {
+        userId,
+        status: 'active',
+        endDate: {
+          gte: new Date()
         }
       }
     })
 
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
-    }
-
-    const activeSubscription = user.subscriptions[0]
-    if (!activeSubscription) {
+    if (!subscription) {
       return NextResponse.json(
         { error: 'No active subscription found' },
         { status: 400 }
       )
     }
 
+    // Calculate total quota points and validate items
+    let totalQuotaPoints = 0
+    const transactionItems = []
+
+    for (const item of items) {
+      const product = await db.product.findUnique({
+        where: { id: item.productId }
+      })
+
+      if (!product) {
+        return NextResponse.json(
+          { error: `Product ${item.productId} not found` },
+          { status: 400 }
+        )
+      }
+
+      const itemPoints = product.quotaPoints * item.quantity
+      totalQuotaPoints += itemPoints
+
+      transactionItems.push({
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: product.quotaPoints * 100, // Convert to paise (mock pricing)
+        quotaPoints: itemPoints
+      })
+    }
+
     // Check if user has enough quota
-    const totalQuotaPoints = items.reduce((sum: number, item: any) => sum + (item.quotaPoints * item.quantity), 0)
-    
-    if (activeSubscription.usedQuota + totalQuotaPoints > activeSubscription.monthlyQuota) {
+    if (subscription.usedQuota + totalQuotaPoints > subscription.monthlyQuota) {
       return NextResponse.json(
         { error: 'Insufficient quota points' },
         { status: 400 }
-      )
-    }
-
-    // Verify shop exists
-    const shop = await db.shop.findUnique({
-      where: { id: shopId }
-    })
-
-    if (!shop) {
-      return NextResponse.json(
-        { error: 'Shop not found' },
-        { status: 404 }
       )
     }
 
@@ -155,45 +144,43 @@ export async function POST(request: NextRequest) {
         transactionId,
         userId,
         shopId,
-        subscriptionId: activeSubscription.id,
+        subscriptionId: subscription.id,
         totalQuotaPoints,
         status: 'completed',
         paymentMethod: paymentMethod || 'qr',
         notes
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            mobile: true
-          }
-        },
-        shop: {
-          select: {
-            id: true,
-            name: true,
-            address: true
+        user: true,
+        shop: true,
+        subscription: {
+          include: {
+            plan: true
           }
         }
       }
     })
 
-    // Create transaction items and update inventory
-    for (const item of items) {
-      // Create transaction item
+    // Create transaction items
+    for (const item of transactionItems) {
       await db.transactionItem.create({
         data: {
           transactionId: transaction.id,
-          productId: item.productId,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice || 0,
-          quotaPoints: item.quotaPoints
+          ...item
         }
       })
+    }
 
-      // Update inventory
+    // Update subscription quota
+    await db.subscription.update({
+      where: { id: subscription.id },
+      data: {
+        usedQuota: subscription.usedQuota + totalQuotaPoints
+      }
+    })
+
+    // Update shop inventory (decrement stock)
+    for (const item of items) {
       const inventory = await db.inventory.findUnique({
         where: {
           shopId_productId: {
@@ -212,25 +199,19 @@ export async function POST(request: NextRequest) {
             }
           },
           data: {
-            quantity: Math.max(0, inventory.quantity - item.quantity),
-            lastUpdated: new Date()
+            quantity: Math.max(0, inventory.quantity - item.quantity)
           }
         })
       }
     }
 
-    // Update user's used quota
-    await db.subscription.update({
-      where: { id: activeSubscription.id },
-      data: {
-        usedQuota: activeSubscription.usedQuota + totalQuotaPoints
-      }
-    })
-
     return NextResponse.json({
       message: 'Transaction completed successfully',
-      transaction,
-      remainingQuota: activeSubscription.monthlyQuota - (activeSubscription.usedQuota + totalQuotaPoints)
+      transaction: {
+        ...transaction,
+        items: transactionItems
+      },
+      remainingQuota: subscription.monthlyQuota - (subscription.usedQuota + totalQuotaPoints)
     })
 
   } catch (error) {
