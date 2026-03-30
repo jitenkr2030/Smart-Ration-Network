@@ -11,6 +11,8 @@ A modern, hybrid QR-based identity system with subscription-based ration supply 
 - **Transaction History**: Complete record of all ration purchases
 - **Family Member Management**: Add family members to subscription
 - **Mobile-first Design**: Accessible on any device
+- **Payment Processing**: Multiple payment methods (Razorpay, UPI, Wallet)
+- **Subscription Upgrades**: Seamless plan upgrades and renewals
 
 ### 🏪 Shop Partner Features
 - **QR Scanner**: Instant customer verification
@@ -18,13 +20,18 @@ A modern, hybrid QR-based identity system with subscription-based ration supply 
 - **Inventory Management**: Track stock levels and get alerts
 - **Transaction Processing**: Quick and secure ration distribution
 - **Customer Information**: View subscription details and quota status
+- **Cart-based Checkout**: Advanced transaction processing with cart
+- **Real-time Updates**: Live inventory and quota updates
 
 ### 🧑‍💻 Admin Features
 - **User Management**: Manage all registered users
 - **Shop Management**: Oversee partner network
-- **Analytics Dashboard**: Comprehensive system insights
+- **Analytics Dashboard**: Comprehensive system insights with charts
 - **Subscription Oversight**: Monitor all active subscriptions
 - **Transaction Monitoring**: Track all system transactions
+- **Revenue Analytics**: Detailed financial reporting
+- **Growth Tracking**: User and shop growth metrics
+- **Performance Monitoring**: System performance indicators
 
 ## 💰 Business Model
 
@@ -143,8 +150,19 @@ Smart-Ration-Network/
 ├── src/
 │   ├── app/                    # Next.js App Router pages
 │   │   ├── api/               # API routes
+│   │   │   ├── auth/          # Authentication endpoints
+│   │   │   ├── payments/      # Payment processing
+│   │   │   ├── transactions/  # Transaction management
+│   │   │   └── subscription-plans/ # Subscription plans
+│   │   ├── admin/             # Admin panel pages
+│   │   │   ├── dashboard/     # Admin overview
+│   │   │   ├── analytics/     # Analytics dashboard
+│   │   │   └── login/         # Admin login
 │   │   ├── dashboard/         # User dashboard
+│   │   │   └── subscription/  # Subscription management
 │   │   ├── shop/              # Shop partner pages
+│   │   │   ├── dashboard/     # Shop overview
+│   │   │   └── transactions/  # Transaction processing
 │   │   ├── login/             # Authentication pages
 │   │   └── register/          # Registration pages
 │   ├── components/            # Reusable UI components
@@ -166,15 +184,19 @@ Smart-Ration-Network/
 - **subscriptions**: User subscription records
 - **products**: Available ration items
 - **transactions**: Ration purchase records
+- **transaction_items**: Individual transaction line items
 - **inventory**: Shop stock management
 - **admins**: System administrators
+- **family_members**: User family members
 
 ### Key Relationships
 - Users → Subscriptions (one-to-many)
 - Users → Transactions (one-to-many)
+- Users → Family Members (one-to-many)
 - Shops → Transactions (one-to-many)
 - Shops → Inventory (one-to-many)
 - Subscriptions → Plans (many-to-one)
+- Transactions → Transaction Items (one-to-many)
 
 ## 🔧 Available Scripts
 
@@ -199,12 +221,21 @@ bun run lint         # Run ESLint
 ### Authentication
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login
+- `POST /api/auth/admin/login` - Admin login
 - `GET /api/auth/qrcode` - Generate QR code
 - `POST /api/auth/qrcode` - Verify QR code
 
 ### Subscription Plans
 - `GET /api/subscription-plans` - Get all plans
 - `POST /api/subscription-plans` - Create new plan
+
+### Transactions
+- `GET /api/transactions` - Get transaction history
+- `POST /api/transactions` - Create new transaction
+
+### Payments
+- `GET /api/payments` - Get payment history
+- `POST /api/payments` - Process payment
 
 ### Users
 - `GET /api/users` - List users (admin)
@@ -223,27 +254,51 @@ bun run lint         # Run ESLint
 - Monthly quota management
 - Access to nearby partner shops
 - Family member inclusion
+- Easy subscription upgrades
 
 ### For Shop Owners
 - Modern customer verification
 - Real-time inventory tracking
 - Increased customer base
 - Simplified transaction processing
+- Sales analytics and insights
 
 ### For Government & NGOs
 - Transparent distribution system
 - Real-time monitoring
 - Reduced fraud and leakage
 - Data-driven policy making
+- Comprehensive analytics
 
 ## 🔒 Security Features
 
 - **JWT Authentication**: Secure token-based authentication
+- **Role-based Access**: Admin, User, and Shop roles
 - **Password Hashing**: bcryptjs for secure password storage
 - **QR Code Security**: Encrypted QR data with timestamps
 - **Input Validation**: Comprehensive input sanitization
 - **CORS Protection**: Proper cross-origin resource sharing
 - **Environment Variables**: Secure configuration management
+
+## 📈 Analytics & Reporting
+
+### User Analytics
+- User growth tracking
+- Subscription distribution
+- Usage patterns
+- Retention metrics
+
+### Business Analytics
+- Revenue tracking
+- Transaction volume
+- Shop performance
+- Product popularity
+
+### System Analytics
+- Performance metrics
+- Error tracking
+- Usage statistics
+- Growth forecasts
 
 ## 🚀 Deployment
 
@@ -275,20 +330,25 @@ bun run start
 ### Phase 1 - Core Features ✅
 - [x] User authentication and QR generation
 - [x] Shop partner interface
-- [x] Basic dashboard functionality
+- [x] Admin panel with analytics
+- [x] Transaction processing system
+- [x] Payment integration
 - [x] Subscription management
+- [x] Real-time quota tracking
 
-### Phase 2 - Advanced Features
-- [ ] Payment gateway integration
+### Phase 2 - Advanced Features 🚧
 - [ ] Mobile app (React Native)
-- [ ] Advanced analytics
-- [ ] AI-powered demand prediction
-
-### Phase 3 - Enterprise Features
-- [ ] Multi-tenant support
+- [ ] Advanced AI-powered features
+- [ ] Multi-language support
 - [ ] Advanced reporting
 - [ ] API for third-party integrations
+
+### Phase 3 - Enterprise Features 📋
+- [ ] Multi-tenant support
 - [ ] Wholesale distribution management
+- [ ] Advanced fraud detection
+- [ ] Blockchain integration
+- [ ] IoT device integration
 
 ## 🤝 Contributing
 
@@ -321,3 +381,5 @@ For support and inquiries:
 **QR Smart Ration Network** - Transforming ration distribution with technology 🚀
 
 Made with ❤️ for Modern India
+
+**Status**: ✅ **Production Ready** - All core features implemented and tested
